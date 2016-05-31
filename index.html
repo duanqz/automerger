@@ -120,7 +120,6 @@
         if (log !== '') {
             //log不为空,则提交修改
             gitlabCommitFunc(curContent, log);
-            logCtrl.val('');
         } else {
             alert('提交日志不能为空,请重新输入!');
         }
@@ -472,12 +471,50 @@
             </div>);
         },
 
-        /** 打开模态对话框**/
+        /** 点击提交按钮*/
         onJsonSave: function (event) {
             event.preventDefault();
             closeEditables();
             //生成json字符串
             curContent = JSON.stringify(this.props.list, null, 2);
+            this.judgeModalDialog(curContent);
+        },
+
+        /** 判断是否弹出模态对话框**/
+        judgeModalDialog: function (curContent) {
+
+            //判断是否有修改,没有修改则不需要提交
+            if (curContent === originContent) {
+                alert('没有任何修改,无需提交!');
+                return
+            }
+
+            let gitlabParams = {
+                private_token: PRIVATE_TOKEN,
+                ref: BRANCH,
+                file_path: `config/${curSelected}${GET_FILE_NAME}`,
+            }
+
+            $.getJSON(URL_GITLAB_FILE, gitlabParams, (response)=> {
+                let content = response.content;
+                if (response.encoding && response.encoding === 'base64') {
+                    content = window.atob(content);
+                }
+                //为避免强制覆盖,判断在修改过程中远程文件是否发生变化
+                if (content !== originContent) {
+                    if (confirm('远程文件已发生改动,是否丢弃修改并载入最新版本?')) {
+                        location.reload();
+                    }
+                    return
+                }
+                this.showCommitModal(curContent);
+            }, (error)=> {
+                alert(`网络出错[${error}]`);
+            });
+        },
+
+        /** 显示模态对话框*/
+        showCommitModal: function (curContent) {
             //json与源进行diff计算
             let diff = JsDiff.diffLines(originContent, curContent);
             //获取diff显示区域
@@ -494,12 +531,42 @@
                 diffPreview.appendChild(span);
             });
             //弹出模态对话框
-            $('#commitModalFileName').html(`修改的文件: config/'${curSelected}${GET_FILE_NAME}`);
+            $('#commitModalFileName').html(`修改的文件: config/${curSelected}${GET_FILE_NAME}`);
             $('#commitModal').modal();
         },
 
         /** 提交服务器*/
         jsonSaveCommit: function (content, log) {
+
+            let gitlabParams = {
+                private_token: PRIVATE_TOKEN,
+                ref: BRANCH,
+                file_path: `config/${curSelected}${GET_FILE_NAME}`,
+            }
+
+            /** 提交前先拉取服务器最新文件来做对比*/
+            $.getJSON(URL_GITLAB_FILE, gitlabParams, (response)=> {
+                let content = response.content;
+                if (response.encoding && response.encoding === 'base64') {
+                    content = window.atob(content);
+                }
+                //为避免冲突,判断在修改过程中远程文件是否发生变化
+                if (content !== originContent) {
+                    if (confirm('远程文件已发生改动,是否丢弃修改并载入最新版本?')) {
+                        location.reload();
+                    }
+                    return
+                }
+
+                this.doAjaxCommit(content, log);
+            }, (error)=> {
+                alert(`网络出错[${error}]`);
+            });
+        },
+
+        /** 真正做提交请求*/
+        doAjaxCommit: function (content, log) {
+
             //组建提交参数
             var params = {
                 private_token: PRIVATE_TOKEN,
@@ -517,11 +584,14 @@
                 success: function (data) {
                     //提交成功后隐藏模态框,刷新页面
                     alert('提交成功了!');
+                    let logCtrl = $('#commitModalLog');
+                    logCtrl.val('');
                     $('#commitModal').modal('hide');
                     location.reload();
                 },
                 error: function (msg) {
-                    alert(msg.statusText);
+                    let message = JSON.parse(msg.responseText).message;
+                    alert(`提交网络出错[${message}]`);
                 }
             });
         }

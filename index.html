@@ -536,7 +536,7 @@
         },
 
         /** 提交服务器*/
-        jsonSaveCommit: function (content, log) {
+        jsonSaveCommit: function (submitContent, log) {
 
             let gitlabParams = {
                 private_token: PRIVATE_TOKEN,
@@ -558,7 +558,7 @@
                     return
                 }
 
-                this.doAjaxCommit(content, log);
+                this.doAjaxCommit(submitContent, log);
             }, (error)=> {
                 alert(`网络出错[${error}]`);
             });

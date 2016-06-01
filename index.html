@@ -116,12 +116,17 @@
     $('#commitModalOk').click((event)=> {
         event.preventDefault();
         let logCtrl = $('#commitModalLog');
+        let authorCtrl = $('#commitModalAuthor');
         let log = logCtrl.val();
-        if (log !== '') {
-            //log不为空,则提交修改
-            gitlabCommitFunc(curContent, log);
-        } else {
+        let author = authorCtrl.val();
+        if (log === '') {
             alert('提交日志不能为空,请重新输入!');
+        } else if (author === '') {
+            alert('请输入作者!');
+        } else {
+            let commitInfo = `log:[${log}]\n author:[${author}]`;
+            //log不为空,则提交修改
+            gitlabCommitFunc(curContent, commitInfo);
         }
     });
 
@@ -999,7 +1004,15 @@
                     <label>提交Log:</label>
                     <textarea id="commitModalLog"
                               style="width:100%;resize: none"
+                              placeholder="输入提交信息"
                               rows="3"></textarea>
+                    <div class="input-group">
+                        <span class="input-group-addon">作者:</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="输入作者"
+                               id="commitModalAuthor">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default"

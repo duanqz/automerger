@@ -9,14 +9,15 @@
     <script src="./js/react.js"></script>
     <script src="./js/react-dom.js"></script>
     <script src="./js/jquery-2.2.3.min.js"></script>
+    <script src="./js/jquery.cookie.js"></script>
     <script src="./js/browser.min.js"></script>
-    <script src="./js/bootstrap.min.js"></script>
     <script src="./js/diff.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
 </head>
 <body>
 <h1>AutoMerger Flows Configuration</h1>
-<div id="container">
-</div>
+
+<div id="container"></div>
 
 <script type="text/babel">
 
@@ -30,14 +31,20 @@
     ];
     var curSelected = 'meizu';
 
-    const PRIVATE_TOKEN = 'L3oQuEDi-C3-bXeJXjrF';
     const PROJECT_ID = 51;
     const BRANCH = 'master';
+    const COOKIE_EXPIRE_DAYS = 30;
+    const COOKIE_KEY_LOGIN_USER = 'login_user';
 
     /** 获取gitlab接口数据*/
-    const URL_GITLAB_BASE = 'http://gitlab.meizu.com/api/v3';
-    const URL_GITLAB_FILE = `${URL_GITLAB_BASE}/projects/${PROJECT_ID}/repository/files`;
+    const URL_GITLAB_BASE = 'http://gitlab.meizu.com';
+    const URL_GITLAB_BASE_API = `${URL_GITLAB_BASE}/api/v3`;
+    const URL_GITLAB_FILE = `${URL_GITLAB_BASE_API}/projects/${PROJECT_ID}/repository/files`;
     const GET_FILE_NAME = '/flows.json';
+    const URL_GITLAB_SESSION = `${URL_GITLAB_BASE_API}/session`;
+    const URL_GITLAB_USER = `${URL_GITLAB_BASE}/u/`;
+
+    var globalUserInfo = null;
 
     /** 编辑框与label文本之间的切换*/
     var editableViews = [];
@@ -53,7 +60,6 @@
             }
         });
     }
-
 
 
     /** 批量选择模态对话框的全局绑定
@@ -83,7 +89,7 @@
     /** 批量操作模态对话框提交事件*/
     $('#myModalCommit').click(()=> {
         let [upstreamCtrl, downstreamCtrl] = [$('#myModalUpStream'), $('#myModalDownStream')];
-        let [textUp, textDown] = [upstreamCtrl.val(), downstreamCtrl.val()];
+        let [textUp, textDown] = [upstreamCtrl.val().trim(), downstreamCtrl.val().trim()];
         if (textUp !== '' && textDown !== '') {
             $('#myModal').modal('hide');
             if (modalType === '添加分支') {
@@ -116,17 +122,12 @@
     $('#commitModalOk').click((event)=> {
         event.preventDefault();
         let logCtrl = $('#commitModalLog');
-        let authorCtrl = $('#commitModalAuthor');
-        let log = logCtrl.val();
-        let author = authorCtrl.val();
+        let log = logCtrl.val().trim();
         if (log === '') {
             alert('提交日志不能为空,请重新输入!');
-        } else if (author === '') {
-            alert('请输入作者!');
         } else {
-            let commitInfo = `log:[${log}]\n author:[${author}]`;
             //log不为空,则提交修改
-            gitlabCommitFunc(curContent, commitInfo);
+            gitlabCommitFunc(curContent, log);
         }
     });
 
@@ -157,6 +158,179 @@
         },
     };
 
+    /***
+     * 最外层View，根据不同登录态显示不同界面
+     */
+    var ContainerView = React.createClass({
+
+        getInitialState: function () {
+            return {
+                login: false
+            };
+        },
+
+        componentDidMount() {
+            /** 先从本地缓存读取用户信息*/
+            this.loadUserFromCookie();
+        },
+
+        render: function () {
+            if (!this.state.login) {
+                return (<LoginView onLogin={this.onLogin}/>)
+            } else {
+                return (<MainView/>);
+            }
+        },
+
+        /** 登录成功，需要重新刷新界面*/
+        onLogin: function () {
+            this.setState({
+                login: true
+            });
+        },
+
+        /** 从cookie中读取本地缓存*/
+        loadUserFromCookie: function () {
+            let userString = $.cookie(COOKIE_KEY_LOGIN_USER);
+            if (!userString || userString.trim() === '') {
+                return;
+            }
+            globalUserInfo = JSON.parse(userString);
+            if (globalUserInfo) {
+                this.setState({
+                    login: true
+                });
+            }
+        }
+    });
+
+
+    /** 登录界面
+     * 如果用户为登录，则显示此界面
+     * */
+    var LoginView = React.createClass({
+
+        render: function () {
+            return (<center>
+                <div className="jumbotron form-horizontal"
+                     style={{maxWidth: 480, padding: 80}}>
+                    <h2>用户登录</h2>
+                    <h4>请使用
+                        <a href={URL_GITLAB_BASE}
+                           target="view_window">GitLab
+                        </a>
+                        账号密码登录<br/>账号为工作邮箱前缀
+                    </h4>
+                    <div className="form-group input-group">
+                        <span className="input-group-addon">用户名</span>
+                        <input type="text"
+                               ref="inputUserName"
+                               onKeyDown={this.onUserNameKeyDown}
+                               className="form-control"
+                               placeholder="输入Gitlab账号"/>
+                    </div>
+                    <div className="form-group input-group">
+                        <span className="input-group-addon">{'密　码'}</span>
+                        <input type="password"
+                               ref="inputPassword"
+                               onKeyDown={this.onPasswordKeyDown}
+                               className="form-control"
+                               placeholder="输入密码"/>
+                    </div>
+                    <div className="form-group">
+                        <div className="col-sm-offset-2 col-sm-10">
+                            <div className="checkbox">
+                                <label>
+                                    <input type="checkbox" defaultChecked='true'
+                                           ref="inputRemember"/>
+                                    {`记住我${COOKIE_EXPIRE_DAYS}天`}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="submit"
+                                className="btn btn-primary"
+                                ref="inputLogin"
+                                onClick={this.onLoginClick}
+                                style={{marginLeft: 60}}>{'登　录'}</button>
+                        <button type="submit"
+                                onClick={this.onResetClick}
+                                className="btn btn-default"
+                                style={{marginLeft: 60}}>{'重　置'}</button>
+                    </div>
+                </div>
+            </center>);
+        },
+
+        /** 回车键跳到下一个输入框*/
+        onUserNameKeyDown: function (event) {
+            if (event.keyCode == 13 && this.refs.inputUserName.value != '') {
+                this.refs.inputPassword.focus();
+            }
+        },
+        /** 回车键登录*/
+        onPasswordKeyDown: function (event) {
+            if (event.keyCode == 13 && this.refs.inputPassword.value != '') {
+                this.refs.inputLogin.focus();
+            }
+        },
+
+        /** 当登录成功时*/
+        onLoginSucceed: function (userInfo) {
+            /** 如果需要缓存登录信息，则保存cookies*/
+            if (this.refs.inputRemember.checked) {
+                $.cookie(COOKIE_KEY_LOGIN_USER, JSON.stringify(userInfo), {expires: COOKIE_EXPIRE_DAYS});
+            } else {
+                $.cookie(COOKIE_KEY_LOGIN_USER, JSON.stringify(userInfo));
+            }
+            globalUserInfo = userInfo;
+            this.props.onLogin();
+        },
+
+        /**
+         * 点击登录按钮
+         * @param event
+         */
+        onLoginClick: function (event) {
+            let userName = this.refs.inputUserName.value;
+            let password = this.refs.inputPassword.value;
+            if (userName === '') {
+                this.refs.inputUserName.focus();
+                return;
+            }
+            if (password === '') {
+                this.refs.inputPassword.focus();
+                return;
+            }
+            let params = {
+                login: userName,
+                password: password
+            };
+            //登录请求
+            $.post(URL_GITLAB_SESSION, params).success((response)=> {
+                this.onLoginSucceed(response);
+            }).error((error)=> {
+                let errMsg = error.statusText;
+                if (error.status === 401) {
+                    errMsg = '验证失败，用户名或密码错了吧！'
+                }
+                alert(errMsg);
+            });
+        },
+
+        /**
+         * 点击重置按钮
+         * @param event
+         */
+        onResetClick: function (event) {
+            this.refs.inputUserName.value = '';
+            this.refs.inputPassword.value = '';
+        },
+
+    });
+
+
 
     /**
      * 定义主页面
@@ -171,37 +345,20 @@
             };
         },
 
-        gitlabParams: {
-            private_token: PRIVATE_TOKEN,
-            ref: BRANCH,
-            file_path: `config/${curSelected}${GET_FILE_NAME}`,
-        },
-
         componentDidMount() {
             this.loadData();
         },
 
         render: function () {
             return (<div>
-                <select onChange={this.onFileSelectChange}
-                        defaultValue={curSelected}>{
-                    CONFIG_TYPES.map((item)=> {
-                        return (<option key={item}
-                                        value={item}>
-                            {item}
-                        </option>);
-                    })}
-                </select>
+                <TopBarView onFileChange={this.onFileChange}/>
                 <FlowView success={this.state.success}
                           loading={this.state.loading}
                           response={JSON.parse(this.state.response)}/>
             </div>);
         },
 
-        onFileSelectChange: function (event) {
-            let value = event.target.value;
-            curSelected = value;
-            this.gitlabParams.file_path = `config/${value}${GET_FILE_NAME}`;
+        onFileChange: function () {
             this.loadData();
         },
 
@@ -211,7 +368,12 @@
                 loading: true,
                 success: false,
             });
-            $.getJSON(URL_GITLAB_FILE, this.gitlabParams, (response)=> {
+            let params = {
+                private_token: globalUserInfo.private_token,
+                ref: BRANCH,
+                file_path: `config/${curSelected}${GET_FILE_NAME}`
+            };
+            $.getJSON(URL_GITLAB_FILE, params, (response)=> {
                 let content = response.content;
                 if (response.encoding && response.encoding === 'base64') {
                     content = window.atob(content);
@@ -229,6 +391,66 @@
                     success: false,
                 });
             });
+        }
+
+    });
+
+    var TopBarView = React.createClass({
+
+        render: function () {
+            return (<nav className="navbar navbar-default">
+                <div className="btn-group navbar-form navbar-left">
+                    <button type="button"
+                            className="btn btn-default dropdown-toggle"
+                            data-toggle="dropdown">
+                        <span ref="refButtonText">{curSelected}</span>
+                        <span className="caret"/>
+                    </button>
+                    <ul className="dropdown-menu">{
+                        CONFIG_TYPES.map((item)=> {
+                            return (<li key={item}>
+                                <a onClick={()=>{this.onItemClick(item)}}>{item}</a>
+                            </li>);
+                        })
+                    }</ul>
+                </div>
+                <div className="btn-group navbar-form navbar-left">
+                    <button onClick={this.onBatchSelectClick}
+                            className="btn btn-default">批量选择
+                    </button>
+                </div>
+                <div className="navbar-form navbar-right">
+                    <button className="btn btn-danger navbar-right"
+                            onClick={this.onLogoutClick}
+                            style={{marginRight: 10}}>登出
+                    </button>
+                </div>
+                <a className="navbar-text navbar-right"
+                   href={`${URL_GITLAB_USER}${globalUserInfo.username}`}
+                   target="view_window">{globalUserInfo.username}</a>
+                <div className="navbar-form navbar-right">
+                    <img style={{width: 32, height: 32}}
+                         src={globalUserInfo.avatar_url}/>
+                </div>
+            </nav>);
+        },
+
+        onBatchSelectClick: function (event) {
+            $('#selectModal').modal();
+        },
+
+
+        onItemClick: function (item) {
+            this.refs.refButtonText.innerHTML = item;
+            if (curSelected !== item) {
+                curSelected = item;
+                this.props.onFileChange();
+            }
+        },
+
+        onLogoutClick: function (event) {
+            $.cookie(COOKIE_KEY_LOGIN_USER, null);
+            location.reload();
         }
 
     });
@@ -293,27 +515,26 @@
 
         render: function () {
             var index = 0;
-            return (<div>
-                <button onClick={this.onBatchSelectClick}
-                        className="btn">批量导入选择
-                </button>
-                <table className="table table-striped table-condensed table-bordered">
-                    {this.props.data.map((data)=> {
-                        return (<FlowRepo data={data}
-                                          index={index++}
-                                          key={data.key}
-                                          list={this.props.list}
-                                          onChecked={this.props.onChecked}
-                                          onChange={this.props.onChange}/>);
-                    })}
-                    <RepoAdder list={this.props.list}
-                               onChange={this.props.onChange}/>
-                </table>
-                <FloatBar list={this.props.list}
-                          data={this.props.data}
-                          onChange={this.props.onChange}
-                          changed={this.props.changed}/>
-            </div>);
+            return (<center>
+                <div style={{maxWidth: 750}}>
+                    <table className="table table-striped table-condensed table-bordered">
+                        {this.props.data.map((data)=> {
+                            return (<FlowRepo data={data}
+                                              index={index++}
+                                              key={data.key}
+                                              list={this.props.list}
+                                              onChecked={this.props.onChecked}
+                                              onChange={this.props.onChange}/>);
+                        })}
+                        <RepoAdder list={this.props.list}
+                                   onChange={this.props.onChange}/>
+                    </table>
+                    <FloatBar list={this.props.list}
+                              data={this.props.data}
+                              onChange={this.props.onChange}
+                              changed={this.props.changed}/>
+                </div>
+            </center>);
         },
 
         /** 批量导入选中的repo, 参数是需要导入的repo数组*/
@@ -325,22 +546,17 @@
             }
             //按参数依次选中
             for (let index in repoArray) {
-                let key = repoArray[index];
+                let key = repoArray[index].trim();
                 let repo = this.props.list[key];
                 if (repo) {
                     repo.checked = true
-                } else {
+                } else if (key !== '') {
                     this.props.list[key] = [];
                     this.props.list[key].checked = true;
                 }
             }
             this.props.onChecked();
         },
-
-        onBatchSelectClick: function (event) {
-            $('#selectModal').modal();
-        },
-
     });
 
     /**
@@ -360,7 +576,7 @@
                 <div style={{marginBottom: 10, float: 'right'}}>
                     <button onClick={this.onUpClick}
                             style={{marginRight: 10, float: 'right'}}
-                            className="btn">回到顶部
+                            className="btn btn-default">↑Top
                     </button>
                     {this.props.changed &&
                     <button onClick={this.onRefresh}
@@ -494,13 +710,13 @@
                 return
             }
 
-            let gitlabParams = {
-                private_token: PRIVATE_TOKEN,
+            let params = {
+                private_token: globalUserInfo.private_token,
                 ref: BRANCH,
                 file_path: `config/${curSelected}${GET_FILE_NAME}`,
             }
 
-            $.getJSON(URL_GITLAB_FILE, gitlabParams, (response)=> {
+            $.getJSON(URL_GITLAB_FILE, params, (response)=> {
                 let content = response.content;
                 if (response.encoding && response.encoding === 'base64') {
                     content = window.atob(content);
@@ -528,10 +744,12 @@
             diffPreview.textContent = '';
             //显示diff内容
             diff.forEach(function (part) {
-                let color = part.added ? 'green' :
-                        part.removed ? 'red' : 'grey';
+                let color = part.added ? 'GREEN' : part.removed ? 'RED' : '#778899';
                 let span = document.createElement('span');
                 span.style.color = color;
+                if (part.added || part.removed) {
+                    span.style.background = '#87CEFF';
+                }
                 span.appendChild(document.createTextNode(part.value));
                 diffPreview.appendChild(span);
             });
@@ -543,14 +761,14 @@
         /** 提交服务器*/
         jsonSaveCommit: function (submitContent, log) {
 
-            let gitlabParams = {
-                private_token: PRIVATE_TOKEN,
+            let params = {
+                private_token: globalUserInfo.private_token,
                 ref: BRANCH,
                 file_path: `config/${curSelected}${GET_FILE_NAME}`,
             }
 
             /** 提交前先拉取服务器最新文件来做对比*/
-            $.getJSON(URL_GITLAB_FILE, gitlabParams, (response)=> {
+            $.getJSON(URL_GITLAB_FILE, params, (response)=> {
                 let content = response.content;
                 if (response.encoding && response.encoding === 'base64') {
                     content = window.atob(content);
@@ -573,13 +791,13 @@
         doAjaxCommit: function (content, log) {
 
             //组建提交参数
-            var params = {
-                private_token: PRIVATE_TOKEN,
+            let params = {
+                private_token: globalUserInfo.private_token,
                 branch_name: BRANCH,
                 file_path: `config/${curSelected}${GET_FILE_NAME}`,
                 encoding: 'text',
                 content: content,
-                commit_message: log,
+                commit_message: log
             };
             //Ajax做PUT提交
             $.ajax({
@@ -615,6 +833,7 @@
                     <tr>
                         <td colSpan="3">
                             <input type="text"
+                                   className="form-control"
                                    ref="inputRepoName"
                                    placeholder="RepoName"/>
                         </td>
@@ -643,7 +862,7 @@
          */
         onRepoOk: function (event) {
             event.preventDefault();
-            var txtRepo = this.refs.inputRepoName.value;
+            var txtRepo = this.refs.inputRepoName.value.trim();
             if (txtRepo) {
                 this.props.list[txtRepo] = [];
                 this.props.onChange(this.props.list);
@@ -692,6 +911,7 @@
                     <td>
                         <input type="text"
                                ref="inputUpstream"
+                               className="form-control"
                                placeholder="upstream"/>
                     </td>
                     <td>
@@ -699,6 +919,7 @@
                     </td>
                     <td>
                         <input type="text"
+                               className="form-control"
                                ref="inputDownstream"
                                placeholder="downstream"/>
                     </td>
@@ -723,8 +944,8 @@
          */
         onBranchOk: function (event) {
             event.preventDefault();
-            var txtUpstream = this.refs.inputUpstream.value;
-            var txtDownstream = this.refs.inputDownstream.value;
+            var txtUpstream = this.refs.inputUpstream.value.trim();
+            var txtDownstream = this.refs.inputDownstream.value.trim();
             if (txtUpstream && txtDownstream) {
                 var branch = {
                     downstream: txtDownstream,
@@ -787,6 +1008,7 @@
                     <td colSpan="2">
                         <input type="text"
                                ref="inputRepoName"
+                               className="form-control"
                                defaultValue={this.props.data.key}
                                placeholder="RepoName"/>
                     </td>
@@ -800,13 +1022,14 @@
             } else {
                 return (<tr className="success">
                     <td>
-                        <label className="checkbox" onClick={this.onCheckClick}>
-                            <input type="checkbox" readOnly
-                                   onClick={this.onCheckClick}
-                                   checked={checked}
-                                   ref="repoCheckbox"/>
-                            {this.props.index + 1}
-                        </label>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox"
+                                       onChange={this.onCheckChange}
+                                       checked={checked}/>
+                                {this.props.index + 1}
+                            </label>
+                        </div>
                     </td>
                     <td colSpan="2">
                         <span onClick={this.changeEditable}>{this.props.data.key}</span>
@@ -821,9 +1044,8 @@
         /**
          * 当checkbox发生改变时
          */
-        onCheckClick: function (event) {
-            event.preventDefault();
-            var checked = !this.props.data.checked;
+        onCheckChange: function (event) {
+            let checked = event.target.checked;
             this.props.data.checked = checked;
             this.props.onChecked();
         },
@@ -834,7 +1056,7 @@
          */
         onRepoOk: function (event) {
             event.preventDefault();
-            var txtRepo = this.refs.inputRepoName.value;
+            var txtRepo = this.refs.inputRepoName.value.trim();
             if (txtRepo === '') {
                 return;
             }
@@ -868,20 +1090,22 @@
         render: function () {
             if (this.state.editable) {
                 return (<tr>
-                    <td>
+                    <td className="col-xs-4">
                         <input type="text"
+                               className="form-control"
                                defaultValue={this.props.branch.upstream}
                                ref="inputUpstream"
                                placeholder="upstream"/>
                     </td>
-                    <td>>></td>
-                    <td>
+                    <td className="col-xs-2">>></td>
+                    <td className="col-xs-4">
                         <input type="text"
+                               className="form-control"
                                defaultValue={this.props.branch.downstream}
                                ref="inputDownstream"
                                placeholder="downstream"/>
                     </td>
-                    <td>
+                    <td className="col-xs-2">
                         <div className="btn-group">
                             <button className="btn btn-success" onClick={this.editBranchOk}>确定</button>
                             <button className="btn btn-default" onClick={this.changeEditable}>取消</button>
@@ -890,14 +1114,14 @@
                 </tr>);
             } else {
                 return (<tr>
-                    <td>
+                    <td className="col-xs-4">
                         <span onClick={this.changeEditable}>{this.props.branch.upstream}</span>
                     </td>
-                    <td>>></td>
-                    <td>
+                    <td className="col-xs-2">>></td>
+                    <td className="col-xs-4">
                         <span onClick={this.changeEditable}>{this.props.branch.downstream}</span>
                     </td>
-                    <td>
+                    <td className="col-xs-2">
                         <button className="btn btn-warning" onClick={this.deleteBranch}>X</button>
                     </td>
                 </tr>);
@@ -910,8 +1134,8 @@
          */
         editBranchOk: function (event) {
             event.preventDefault();
-            var txtUpstream = this.refs.inputUpstream.value;
-            var txtDownstream = this.refs.inputDownstream.value;
+            var txtUpstream = this.refs.inputUpstream.value.trim();
+            var txtDownstream = this.refs.inputDownstream.value.trim();
             if (txtUpstream && txtDownstream) {
                 var obj = this.props.list[this.props.data.key][this.props.index];
                 obj.upstream = txtUpstream;
@@ -940,7 +1164,7 @@
     /**
      * 渲染根节点
      */
-    ReactDOM.render(<MainView/>,
+    ReactDOM.render(<ContainerView/>,
             document.getElementById('container')
     );
 
@@ -964,6 +1188,7 @@
                     <label></label>
                     <label>输入要批量选择的库,以换行分隔(若不存在,将自动创建)</label>
                     <textarea id="selectModalContent"
+                              class="form-control"
                               style="width:100%;resize: none"
                               rows="11"></textarea>
                 </div>
@@ -996,23 +1221,19 @@
                     </h4>
                 </div>
                 <div class="modal-body" style="padding-right:30px">
-                    <label id="commitModalFileName"></label>
-                    <label>结果预览:</label>
+                    <div>
+                        <label id="commitModalFileName"></label>
+                        <label>结果预览:</label>
                     <pre id="diffPreview"
-                         style="width:100%;resize: none; text-align:left">
+                         style="width:100%;resize: none; text-align:left; overflow: auto; height: 320px">
                     </pre>
+                    </div>
                     <label>提交Log:</label>
                     <textarea id="commitModalLog"
+                              class="form-control"
                               style="width:100%;resize: none"
                               placeholder="输入提交信息"
                               rows="3"></textarea>
-                    <div class="input-group">
-                        <span class="input-group-addon">作者:</span>
-                        <input type="text"
-                               class="form-control"
-                               placeholder="输入作者"
-                               id="commitModalAuthor">
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default"
@@ -1054,12 +1275,14 @@
                     <tr>
                         <td>
                             <input type="text"
+                                   class="form-control"
                                    id="myModalUpStream"
                                    placeholder="upstream"/>
                         </td>
                         <td>>></td>
                         <td>
                             <input type="text"
+                                   class="form-control"
                                    id="myModalDownStream"
                                    placeholder="downstream"/>
                         </td>

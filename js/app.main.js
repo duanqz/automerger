@@ -1205,7 +1205,7 @@ var RepoAdder = React.createClass({
                     <input type="text"
                            className="form-control"
                            ref="inputRepoName"
-                           placeholder="Path of repository"/>
+                           placeholder="Name of repository"/>
                 </td>
                 <td style={Styles.centerText}>
                     <div className="btn-group">
@@ -1393,7 +1393,7 @@ var RepoName = React.createClass({
                            ref="inputRepoName"
                            className="form-control"
                            defaultValue={this.props.data.key}
-                           placeholder="Path of repository"/>
+                           placeholder="Name of repository"/>
                 </td>
                 <td style={Styles.centerText}>
                     <div className="btn-group">

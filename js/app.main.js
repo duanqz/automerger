@@ -1,17 +1,9 @@
 'use strict';
 
 /** 代码仓库中路径选择与读取*/
-const CONFIG_TYPES = [
-    'meizu',
-    'odc',
-    'archermind',
-    'intl',
-    'tv',
-    'bsp2base',
-    'bsp2bsp'
-];
+var CONFIG_TYPES = [];
 /** 默认选中路径*/
-var curSelected = 'meizu';
+var curSelected = null;
 
 /** 项目ID*/
 const PROJECT_ID = 51;
@@ -21,6 +13,10 @@ const BRANCH = 'master';
 const COOKIE_EXPIRE_DAYS = 30;
 /**　登陆信息在浏览器存储cookies name*/
 const COOKIE_KEY_LOGIN_USER = 'login_user';
+/**　上次选择信息在浏览器存储last_choose*/
+const COOKIE_KEY_LAST_CHOOSE = 'last_choose';
+
+const DEFAULT_CONFIG_PATH = 'config';
 
 /** 获取gitlab接口数据*/
 const URL_GITLAB_BASE = 'http://gitlab.meizu.com';
@@ -32,6 +28,10 @@ const URL_GITLAB_SESSION = `${URL_GITLAB_BASE_API}/session`;
 const URL_GITLAB_USER = `${URL_GITLAB_BASE}/u/`;
 /**　GitLab上指定项目的Api地址*/
 const URL_GITLAB_FILE = `${URL_GITLAB_BASE_API}/projects/${PROJECT_ID}/repository/files`;
+/** Gitlab用于列出文件和目录*/
+const URL_GITLAB_TREE = `${URL_GITLAB_BASE_API}/projects/${PROJECT_ID}/repository/tree`;
+/** Gitlab没有用户头像*/
+const URL_NO_AVATAR = `${URL_GITLAB_BASE}/assets/no_avatar-849f9c04a3a0d0cea2424ae97b27447dc64a7dbfae83c036c45b403392f0e8ba.png`;
 const FILE_NAME_FLOWS = '/flows.json';
 const FILE_NAME_MAIN = '/main.json';
 
@@ -164,7 +164,7 @@ var getRemoteContent = function (fileName, callback, exception) {
     let params = {
         private_token: globalUserInfo.private_token,
         ref: BRANCH,
-        file_path: `config/${curSelected}${fileName}`
+        file_path: `${DEFAULT_CONFIG_PATH}/${curSelected}${fileName}`
     };
     $.getJSON(URL_GITLAB_FILE, params, (response)=> {
         let content = response.content;
@@ -173,6 +173,37 @@ var getRemoteContent = function (fileName, callback, exception) {
         }
         if (callback) {
             callback(content);
+        }
+    }, (error)=> {
+        alert(`网络出错[${error}]`);
+        if (exception) {
+            exception(error);
+        }
+    });
+};
+
+/**
+ * 获取远程服务器文件列表
+ * @param path　路径
+ * @param callback　回调函数
+ * @param exception 出错回调
+ */
+var getRemoteTree = function (path, callback, exception) {
+    let params = {
+        private_token: globalUserInfo.private_token,
+        ref_name: BRANCH,
+        path: path
+    };
+    $.getJSON(URL_GITLAB_TREE, params, (response)=> {
+        let config_arr = [];
+        for (var i in response) {
+            let config = response[i];
+            if (config.type === 'tree' && config.name !== 'tests' && config.name !== 'template') {
+                config_arr.push(config.name);
+            }
+        }
+        if (callback) {
+            callback(config_arr);
         }
     }, (error)=> {
         alert(`网络出错[${error}]`);
@@ -195,7 +226,7 @@ var commitRemoteFile = function (content, fileName, log, callback, exception) {
     let params = {
         private_token: globalUserInfo.private_token,
         branch_name: BRANCH,
-        file_path: `config/${curSelected}${fileName}`,
+        file_path: `${DEFAULT_CONFIG_PATH}/${curSelected}${fileName}`,
         encoding: 'text',
         content: content,
         commit_message: log
@@ -252,24 +283,24 @@ var commitJsonFile = function (curContent, oriContent, fileName) {
  */
 var showCommitModal = function (curContent, oriContent, fileName) {
     //json与源进行diff计算
-    let diff = JsDiff.diffLines(oriContent, curContent);
+    // let diff = JsDiff.diffLines(oriContent, curContent);
     //获取diff显示区域
-    let diffPreview = document.getElementById('diffPreview');
+    // let diffPreview = document.getElementById('diffPreview');
     //清空显示区域
-    diffPreview.textContent = '';
+    diffPreview.textContent = curContent;
     //显示diff内容
-    diff.forEach(function (part) {
-        let color = part.added ? 'GREEN' : part.removed ? 'RED' : '#778899';
-        let span = document.createElement('span');
-        span.style.color = color;
-        if (part.added || part.removed) {
-            span.style.background = '#87CEFF';
-        }
-        span.appendChild(document.createTextNode(part.value));
-        diffPreview.appendChild(span);
-    });
+    // diff.forEach(function (part) {
+    //     let color = part.added ? 'GREEN' : part.removed ? 'RED' : '#778899';
+    //     let span = document.createElement('span');
+    //     span.style.color = color;
+    //     if (part.added || part.removed) {
+    //         span.style.background = '#87CEFF';
+    //     }
+    //     span.appendChild(document.createTextNode(part.value));
+    //     diffPreview.appendChild(span);
+    // });
     //弹出模态对话框
-    $('#commitModalFileName').html(`修改的文件: config/${curSelected}${fileName}`);
+    $('#commitModalFileName').html(`修改的文件: ${DEFAULT_CONFIG_PATH}/${curSelected}${fileName}`);
     $('#commitModal').modal();
 };
 
@@ -370,7 +401,7 @@ var ContainerView = React.createClass({
 
     componentDidMount() {
         /** 先从本地缓存读取用户信息*/
-        this.loadUserFromCookie();
+        this.loadDataFromCookie();
     },
 
     render: function () {
@@ -389,7 +420,7 @@ var ContainerView = React.createClass({
     },
 
     /** 从cookie中读取本地缓存*/
-    loadUserFromCookie: function () {
+    loadDataFromCookie: function () {
         let userString = $.cookie(COOKIE_KEY_LOGIN_USER);
         if (!userString || userString.trim() === '') {
             return;
@@ -399,6 +430,10 @@ var ContainerView = React.createClass({
             this.setState({
                 login: true
             });
+        }
+        let lastSel = $.cookie(COOKIE_KEY_LAST_CHOOSE);
+        if (lastSel && lastSel !== '') {
+            curSelected = lastSel;
         }
     }
 });
@@ -527,7 +562,7 @@ var LoginView = React.createClass({
     onResetClick: function (event) {
         this.refs.inputUserName.value = '';
         this.refs.inputPassword.value = '';
-    },
+    }
 
 });
 
@@ -549,8 +584,8 @@ var MainView = React.createClass({
     },
 
     componentDidMount() {
-        this.loadDataFlows();
-        this.loadDataMain();
+        // this.loadDataFlows();
+        // this.loadDataMain();
     },
 
     render: function () {
@@ -625,6 +660,24 @@ var MainView = React.createClass({
 /**　顶部导航栏*/
 var TopBarView = React.createClass({
 
+    componentDidMount() {
+        this.loadConfigTypes();
+    },
+
+    /** 读取文件夹列表*/
+    loadConfigTypes: function () {
+        getRemoteTree(DEFAULT_CONFIG_PATH,
+            (content)=> {
+                CONFIG_TYPES = content;
+                if (!curSelected) {
+                    curSelected = content[0];
+                }
+                this.props.onFileChange();
+            }, (error)=> {
+
+            })
+    },
+
     render: function () {
         return (<nav className="navbar navbar-default">
             <div className="navbar-form navbar-left">
@@ -651,13 +704,14 @@ var TopBarView = React.createClass({
             }</a>
             <div className="navbar-form navbar-right">
                 <img style={{width: 32, height: 32}}
-                     src={globalUserInfo.avatar_url}/>
+                     src={globalUserInfo.avatar_url?globalUserInfo.avatar_url:URL_NO_AVATAR}/>
             </div>
         </nav>);
     },
 
     onSelectionChange: function (event) {
         curSelected = event.target.value;
+        $.cookie(COOKIE_KEY_LAST_CHOOSE, curSelected);
         this.props.onFileChange();
     },
 
@@ -678,7 +732,7 @@ var MailView = React.createClass({
         if (this.props.loading) {
             return (<span>
                 <center><h3>
-                    <i className="icon-spinner icon-spin"/>Loading...</h3></center>
+                    <i className="icon-spinner icon-spin"/>正在读取...</h3></center>
             </span>);
         }
         if (this.props.success) {
@@ -693,7 +747,7 @@ var MailView = React.createClass({
             }
             return (<div>
                     <center>
-                        <h3><i className="icon-envelope"/>Mail Configs</h3>
+                        <h3><i className="icon-envelope"/>发邮件配置</h3>
                         <div style={{maxWidth: 320, minWidth: 300}}>
                             <MailTableView tableName="仅接收代码流报告(MAIL TO)"
                                            tableData={this.props.response.MAIL_TO}/>
@@ -875,7 +929,7 @@ var FlowView = React.createClass({
         if (this.props.loading) {
             return (<span>
             <center><h3><i className="icon-spinner icon-spin"/>
-            Loading...</h3></center>
+            正在读取...</h3></center>
             </span>);
         }
         if (this.props.success) {
@@ -890,7 +944,7 @@ var FlowView = React.createClass({
             return (<div style={{marginBottom: 50}}>
             <span>
             <center>
-            <h3><i className=" icon-random"/>Flow Configs</h3>
+            <h3><i className=" icon-random"/>自动流配置</h3>
             </center>
             </span>
                 <RepoList data={showData}
@@ -1205,7 +1259,7 @@ var RepoAdder = React.createClass({
                     <input type="text"
                            className="form-control"
                            ref="inputRepoName"
-                           placeholder="Name of repository"/>
+                           placeholder="Path of repository"/>
                 </td>
                 <td style={Styles.centerText}>
                     <div className="btn-group">
@@ -1370,7 +1424,7 @@ var FlowRepo = React.createClass({
             delete this.props.list[repoName];
             this.props.onChange(this.props.list);
         }
-    },
+    }
 
 });
 
@@ -1393,7 +1447,7 @@ var RepoName = React.createClass({
                            ref="inputRepoName"
                            className="form-control"
                            defaultValue={this.props.data.key}
-                           placeholder="Name of repository"/>
+                           placeholder="Path of repository"/>
                 </td>
                 <td style={Styles.centerText}>
                     <div className="btn-group">
@@ -1455,7 +1509,7 @@ var RepoName = React.createClass({
             this.props.onChange(this.props.list);
         }
         this.setState({
-            editable: false,
+            editable: false
         });
     },
 
@@ -1553,7 +1607,7 @@ var BranchName = React.createClass({
 
 var Styles = {
     centerText: {
-        textAlign: 'center',
+        textAlign: 'center'
     }
 };
 

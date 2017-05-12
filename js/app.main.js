@@ -1338,22 +1338,22 @@ var FlowRepo = React.createClass({
     renderBranchAdd: function () {
         if (this.state.editable) {
             return (<tr>
-                <td>
+                <td style={Styles.centerText}>
                     <input type="text"
                            ref="inputUpstream"
                            className="form-control"
                            placeholder="upstream"/>
                 </td>
-                <td>
+                <td style={Styles.centerText}>
                     >>
                 </td>
-                <td>
+                <td style={Styles.centerText}>
                     <input type="text"
                            className="form-control"
                            ref="inputDownstream"
                            placeholder="downstream"/>
                 </td>
-                <td>
+                <td style={Styles.centerText}>
                     <div className="btn-group">
                         <button className="btn btn-sm btn-success" onClick={this.onBranchOk}>确定</button>
                         <button className="btn btn-sm btn-default" onClick={this.changeEditable}>取消</button>
@@ -1533,15 +1533,15 @@ var BranchName = React.createClass({
     render: function () {
         if (this.state.editable) {
             return (<tr>
-                <td className="col-xs-4">
+                <td className="col-xs-4" style={Styles.centerText}>
                     <input type="text"
                            className="form-control"
                            defaultValue={this.props.branch.upstream}
                            ref="inputUpstream"
                            placeholder="upstream"/>
                 </td>
-                <td className="col-xs-2">>></td>
-                <td className="col-xs-4">
+                <td className="col-xs-2" style={Styles.centerText}>>></td>
+                <td className="col-xs-4" style={Styles.centerText}>
                     <input type="text"
                            className="form-control"
                            defaultValue={this.props.branch.downstream}
@@ -1557,11 +1557,11 @@ var BranchName = React.createClass({
             </tr>);
         } else {
             return (<tr>
-                <td className="col-xs-4">
+                <td className="col-xs-4" style={Styles.centerText}>
                     <span onClick={this.changeEditable}>{this.props.branch.upstream}</span>
                 </td>
-                <td className="col-xs-2">>></td>
-                <td className="col-xs-4">
+                <td className="col-xs-2" style={Styles.centerText}>>></td>
+                <td className="col-xs-4" style={Styles.centerText}>
                     <span onClick={this.changeEditable}>{this.props.branch.downstream}</span>
                 </td>
                 <td className="col-xs-2" style={Styles.centerText}>

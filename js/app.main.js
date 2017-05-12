@@ -1345,7 +1345,7 @@ var FlowRepo = React.createClass({
                            placeholder="upstream"/>
                 </td>
                 <td style={Styles.centerText}>
-                    >>
+                    <i className="icon-caret-right"/><i className="icon-caret-right"/>
                 </td>
                 <td style={Styles.centerText}>
                     <input type="text"
@@ -1540,7 +1540,9 @@ var BranchName = React.createClass({
                            ref="inputUpstream"
                            placeholder="upstream"/>
                 </td>
-                <td className="col-xs-2" style={Styles.centerText}>>></td>
+                <td className="col-xs-2" style={Styles.centerText}>
+				    <i className="icon-caret-right"/><i className="icon-caret-right"/>
+				</td>
                 <td className="col-xs-4" style={Styles.centerText}>
                     <input type="text"
                            className="form-control"
@@ -1560,7 +1562,9 @@ var BranchName = React.createClass({
                 <td className="col-xs-4" style={Styles.centerText}>
                     <span onClick={this.changeEditable}>{this.props.branch.upstream}</span>
                 </td>
-                <td className="col-xs-2" style={Styles.centerText}>>></td>
+                <td className="col-xs-2" style={Styles.centerText}>
+				    <i className="icon-caret-right"/><i className="icon-caret-right"/>
+				</td>
                 <td className="col-xs-4" style={Styles.centerText}>
                     <span onClick={this.changeEditable}>{this.props.branch.downstream}</span>
                 </td>

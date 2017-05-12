@@ -1611,7 +1611,7 @@ var BranchName = React.createClass({
 
 var Styles = {
     centerText: {
-        textAlign: 'center',
+        textAlign: 'center';
 		vertical-align: 'middle'
     }
 };

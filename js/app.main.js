@@ -747,7 +747,7 @@ var MailView = React.createClass({
             }
             return (<div>
                     <center>
-                        <h3><i className="icon-envelope"/>发邮件配置</h3>
+                        <h3><i className="icon-envelope"/> 发邮件配置</h3>
                         <div style={{maxWidth: 320, minWidth: 300}}>
                             <MailTableView tableName="仅接收代码流报告(MAIL TO)"
                                            tableData={this.props.response.MAIL_TO}/>
@@ -1458,7 +1458,7 @@ var RepoName = React.createClass({
             </tr>);
         } else {
             return (<tr className="success">
-                <td>
+                <td style={Styles.centerText}>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox"
@@ -1468,7 +1468,7 @@ var RepoName = React.createClass({
                         </label>
                     </div>
                 </td>
-                <td colSpan="2">
+                <td colSpan="2" style={Styles.centerText}>
                     <span onClick={this.changeEditable}>{this.props.data.key}</span>
                 </td>
                 <td style={Styles.centerText}>
@@ -1607,7 +1607,8 @@ var BranchName = React.createClass({
 
 var Styles = {
     centerText: {
-        textAlign: 'center'
+        textAlign: 'center',
+		vertical-align: 'middle'
     }
 };
 

@@ -60,3 +60,8 @@ p, ul {
 ul {
   padding-left: 30px;
 }
+
+td {
+  text-align: center;
+  vertical-align: middle;
+}

@@ -1613,10 +1613,7 @@ var Styles = {
     centerText: {
         textAlign: 'center'
     }
-	middleText: {
-		verticalAlgin: 'middle'
-	}
-};
+}
 
 /**
  * 渲染根节点

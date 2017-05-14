@@ -868,7 +868,7 @@ var MailTableCore = React.createClass({
         </tr>}
         {this.props.tableData.map((data, index)=> {
             return (<tr key={data}>
-                <td style={Styles.centerText}>{data}</td>
+                <td>{data}</td>
                 <td style={{width: 86, textAlign: 'center'}}>
                     <button className="btn btn-link"
                             onClick={(event)=> {
@@ -1261,7 +1261,7 @@ var RepoAdder = React.createClass({
                            ref="inputRepoName"
                            placeholder="Path of repository"/>
                 </td>
-                <td style={Styles.centerText}>
+                <td>
                     <div className="btn-group">
                         <button className="btn btn-sm btn-success" onClick={this.onRepoOk}>确定</button>
                         <button className="btn btn-sm btn-default" onClick={this.changeEditable}>取消</button>
@@ -1338,22 +1338,22 @@ var FlowRepo = React.createClass({
     renderBranchAdd: function () {
         if (this.state.editable) {
             return (<tr>
-                <td style={Styles.centerText}>
+                <td>
                     <input type="text"
                            ref="inputUpstream"
                            className="form-control"
                            placeholder="upstream"/>
                 </td>
-                <td style={Styles.centerText}>
+                <td>
                     <i className="icon-caret-right"/><i className="icon-caret-right"/>
                 </td>
-                <td style={Styles.centerText}>
+                <td>
                     <input type="text"
                            className="form-control"
                            ref="inputDownstream"
                            placeholder="downstream"/>
                 </td>
-                <td style={Styles.centerText}>
+                <td>
                     <div className="btn-group">
                         <button className="btn btn-sm btn-success" onClick={this.onBranchOk}>确定</button>
                         <button className="btn btn-sm btn-default" onClick={this.changeEditable}>取消</button>
@@ -1449,7 +1449,7 @@ var RepoName = React.createClass({
                            defaultValue={this.props.data.key}
                            placeholder="Path of repository"/>
                 </td>
-                <td style={Styles.centerText}>
+                <td>
                     <div className="btn-group">
                         <button className="btn btn-sm btn-success" onClick={this.onRepoOk}>确定</button>
                         <button className="btn btn-sm btn-default" onClick={this.changeEditable}>取消</button>
@@ -1458,7 +1458,7 @@ var RepoName = React.createClass({
             </tr>);
         } else {
             return (<tr className="success">
-                <td style={Styles.centerText}>
+                <td>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox"
@@ -1468,10 +1468,10 @@ var RepoName = React.createClass({
                         </label>
                     </div>
                 </td>
-                <td colSpan="2" style={Styles.centerText}>
+                <td colSpan="2">
                     <span onClick={this.changeEditable}>{this.props.data.key}</span>
                 </td>
-                <td style={Styles.centerText}>
+                <td>
                     <button className="btn btn-link" onClick={this.deleteRepo}>
                         <i className="icon-trash"/>删除
                     </button>
@@ -1533,24 +1533,24 @@ var BranchName = React.createClass({
     render: function () {
         if (this.state.editable) {
             return (<tr>
-                <td className="col-xs-4" style={Styles.centerText}>
+                <td className="col-xs-4">
                     <input type="text"
                            className="form-control"
                            defaultValue={this.props.branch.upstream}
                            ref="inputUpstream"
                            placeholder="upstream"/>
                 </td>
-                <td className="col-xs-2" style={Styles.centerText}>
+                <td className="col-xs-2">
 				    <i className="icon-caret-right"/><i className="icon-caret-right"/>
 				</td>
-                <td className="col-xs-4" style={Styles.centerText}>
+                <td className="col-xs-4">
                     <input type="text"
                            className="form-control"
                            defaultValue={this.props.branch.downstream}
                            ref="inputDownstream"
                            placeholder="downstream"/>
                 </td>
-                <td className="col-xs-2" style={Styles.centerText}>
+                <td className="col-xs-2">
                     <div className="btn-group">
                         <button className="btn btn-sm btn-success" onClick={this.editBranchOk}>确定</button>
                         <button className="btn btn-sm btn-default" onClick={this.changeEditable}>取消</button>
@@ -1559,16 +1559,16 @@ var BranchName = React.createClass({
             </tr>);
         } else {
             return (<tr>
-                <td className="col-xs-4" style={Styles.centerText}>
+                <td className="col-xs-4">
                     <span onClick={this.changeEditable}>{this.props.branch.upstream}</span>
                 </td>
-                <td className="col-xs-2" style={Styles.centerText}>
+                <td className="col-xs-2">
 				    <i className="icon-caret-right"/><i className="icon-caret-right"/>
 				</td>
-                <td className="col-xs-4" style={Styles.centerText}>
+                <td className="col-xs-4">
                     <span onClick={this.changeEditable}>{this.props.branch.downstream}</span>
                 </td>
-                <td className="col-xs-2" style={Styles.centerText}>
+                <td className="col-xs-2">
                     <button className="btn btn-link" onClick={this.deleteBranch}>
                         <i className="icon-trash"/>删除
                     </button>
@@ -1609,11 +1609,6 @@ var BranchName = React.createClass({
     }
 });
 
-var Styles = {
-    centerText: {
-        textAlign: 'center'
-    }
-}
 
 /**
  * 渲染根节点

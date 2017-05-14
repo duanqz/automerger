@@ -1613,6 +1613,9 @@ var Styles = {
     centerText: {
         textAlign: 'center'
     }
+	middleText: {
+		verticalAlgin: 'middle'
+	}
 };
 
 /**

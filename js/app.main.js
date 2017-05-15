@@ -1463,6 +1463,7 @@ var RepoName = React.createClass({
                         <label>
                             <input type="checkbox"
                                    onChange={this.onCheckChange}
+								   class="large-checkbox"
                                    checked={checked}/>
                             &nbsp;&nbsp;{this.props.index + 1}
                         </label>

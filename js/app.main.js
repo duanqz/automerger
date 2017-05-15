@@ -1458,7 +1458,7 @@ var RepoName = React.createClass({
             </tr>);
         } else {
             return (<tr className="success">
-                <td>
+                <td style="vertical-align: middle">
                     <div class="checkbox">
                         <label>
                             <input type="checkbox"
@@ -1469,10 +1469,10 @@ var RepoName = React.createClass({
                         </label>
                     </div>
                 </td>
-                <td colSpan="2">
+                <td colSpan="2" style="vertical-align: middle">
                     <span onClick={this.changeEditable}>{this.props.data.key}</span>
                 </td>
-                <td>
+                <td class="center-text">
                     <button className="btn btn-link" onClick={this.deleteRepo}>
                         <i className="icon-trash"/>删除
                     </button>

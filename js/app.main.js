@@ -1464,7 +1464,7 @@ var RepoName = React.createClass({
                             <input type="checkbox"
                                    onChange={this.onCheckChange}
                                    checked={checked}/>
-                            &nbsp;&nbsp;{this.props.index + 1}
+                            {this.props.index + 1}
                         </label>
                     </div>
                 </td>

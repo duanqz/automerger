@@ -1533,24 +1533,24 @@ var BranchName = React.createClass({
     render: function () {
         if (this.state.editable) {
             return (<tr>
-                <td className="col-xs-4">
+                <td className="col-xs-4 center-text">
                     <input type="text"
                            className="form-control"
                            defaultValue={this.props.branch.upstream}
                            ref="inputUpstream"
                            placeholder="upstream"/>
                 </td>
-                <td className="col-xs-2">
+                <td className="col-xs-2 center-text">
 				    <i className="icon-caret-right"/><i className="icon-caret-right"/>
 				</td>
-                <td className="col-xs-4">
+                <td className="col-xs-4 center-text">
                     <input type="text"
                            className="form-control"
                            defaultValue={this.props.branch.downstream}
                            ref="inputDownstream"
                            placeholder="downstream"/>
                 </td>
-                <td className="col-xs-2">
+                <td className="col-xs-2 center-text">
                     <div className="btn-group">
                         <button className="btn btn-sm btn-success" onClick={this.editBranchOk}>确定</button>
                         <button className="btn btn-sm btn-default" onClick={this.changeEditable}>取消</button>
@@ -1559,16 +1559,16 @@ var BranchName = React.createClass({
             </tr>);
         } else {
             return (<tr>
-                <td className="col-xs-4">
+                <td className="col-xs-4 center-text">
                     <span onClick={this.changeEditable}>{this.props.branch.upstream}</span>
                 </td>
-                <td className="col-xs-2">
+                <td className="col-xs-2 center-text">
 				    <i className="icon-caret-right"/><i className="icon-caret-right"/>
 				</td>
-                <td className="col-xs-4">
+                <td className="col-xs-4 center-text">
                     <span onClick={this.changeEditable}>{this.props.branch.downstream}</span>
                 </td>
-                <td className="col-xs-2">
+                <td className="col-xs-2 center-text">
                     <button className="btn btn-link" onClick={this.deleteBranch}>
                         <i className="icon-trash"/>删除
                     </button>

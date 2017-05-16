@@ -868,7 +868,7 @@ var MailTableCore = React.createClass({
         </tr>}
         {this.props.tableData.map((data, index)=> {
             return (<tr key={data}>
-                <td>{data}</td>
+                <td className="center-text">{data}</td>
                 <td style={{width: 86, textAlign: 'center'}}>
                     <button className="btn btn-link"
                             onClick={(event)=> {

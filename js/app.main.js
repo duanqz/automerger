@@ -1439,7 +1439,7 @@ var RepoName = React.createClass({
         var checked = this.props.data.checked ? true : false;
         if (this.state.editable) {
             return (<tr className="success">
-                <td>
+                <td className="center-text">
                     <label>{this.props.index + 1}.</label>
                 </td>
                 <td colSpan="2">
@@ -1462,6 +1462,7 @@ var RepoName = React.createClass({
                     <div class="checkbox">
                         <label>
                             <input type="checkbox"
+                                   style="margin-right: 5px;"
                                    onChange={this.onCheckChange}
                                    checked={checked}/>
                             {this.props.index + 1}

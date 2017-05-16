@@ -61,8 +61,8 @@ ul {
   padding-left: 30px;
 }
 
-table tr th td {
-  border: 0px;
+table tbody tr th td {
+  border: 0px !important;
 }
 
 .center-text {

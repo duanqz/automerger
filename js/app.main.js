@@ -1344,7 +1344,7 @@ var FlowRepo = React.createClass({
                            className="form-control"
                            placeholder="upstream"/>
                 </td>
-                <td>
+                <td className="center-text">
                     <i className="icon-caret-right"/><i className="icon-caret-right"/>
                 </td>
                 <td>

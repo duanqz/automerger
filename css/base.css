@@ -63,10 +63,7 @@ ul {
 
 .center-text {
   text-align: center;
+  border-left-style: none !important;
+  border-right-style: none !important;
   vertical-align: middle !important;
-}
-
-.large-checkbox {
-  height: 20px;
-  width: 20px;
 }

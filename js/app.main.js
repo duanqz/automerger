@@ -1462,7 +1462,6 @@ var RepoName = React.createClass({
                     <div class="checkbox">
                         <label>
                             <input type="checkbox"
-                                   style="margin-right: 5px;"
                                    onChange={this.onCheckChange}
                                    checked={checked}/>
                             {this.props.index + 1}

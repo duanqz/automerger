@@ -61,9 +61,11 @@ ul {
   padding-left: 30px;
 }
 
+table tr th td {
+  border: 0px;
+}
+
 .center-text {
   text-align: center;
-  border-left-style: none !important;
-  border-right-style: none !important;
   vertical-align: middle !important;
 }

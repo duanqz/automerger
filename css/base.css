@@ -65,6 +65,10 @@ table tr  {
   border-collapse: separate !important;
 }
 
+th {
+  border: 0px !important;	
+}
+
 td {
   border: 0px !important;
 }

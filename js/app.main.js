@@ -749,11 +749,11 @@ var MailView = React.createClass({
                     <center>
                         <h3><i className="icon-envelope"/> 发邮件配置</h3>
                         <div style={{maxWidth: 320, minWidth: 300}}>
-                            <MailTableView tableName="仅接收代码流报告(MAIL TO)"
+                            <MailTableView tableName="汇总报告接收列表"
                                            tableData={this.props.response.MAIL_TO}/>
-                            <MailTableView tableName="接收所有代码流邮件(MAIL CC)"
+                            <MailTableView tableName="提交冲突接收列表"
                                            tableData={this.props.response.MAIL_CC}/>
-                            <MailBranchAwareView tableName="接收特定分支的代码流邮件"
+                            <MailBranchAwareView tableName="特定分支的接收列表"
                                                  tableData={this.props.response.MAIL_BRANCH_AWARE}/>
                         </div>
                         <button className="btn btn-primary" onClick={this.onCommitClick}>

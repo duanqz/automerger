@@ -981,7 +981,7 @@ var RepoList = React.createClass({
         var index = 0;
         return (<center>
             <div style={{maxWidth: 750, minWidth: 640}}>
-                <div style="margin-bottom: 10px">
+                <div>
                     <button onClick={this.onBatchSelectClick}
                             className="btn btn-default btn-sm">
                             <i className="icon-reorder"/> 批量选择

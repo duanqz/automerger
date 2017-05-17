@@ -732,7 +732,7 @@ var MailView = React.createClass({
         if (this.props.loading) {
             return (<span>
                 <center><h3>
-                    <i className="icon-spinner icon-spin"/>正在读取...</h3></center>
+                    <i className="icon-spinner icon-spin"/> 正在读取...</h3></center>
             </span>);
         }
         if (this.props.success) {
@@ -928,8 +928,7 @@ var FlowView = React.createClass({
     render: function () {
         if (this.props.loading) {
             return (<span>
-            <center><h3><i className="icon-spinner icon-spin"/>
-            正在读取...</h3></center>
+            <center><h3><i className="icon-spinner icon-spin"/> 正在读取...</h3></center>
             </span>);
         }
         if (this.props.success) {
@@ -944,7 +943,7 @@ var FlowView = React.createClass({
             return (<div style={{marginBottom: 50}}>
             <span>
             <center>
-            <h3><i className=" icon-random"/>自动流配置</h3>
+            <h3><i className=" icon-random"/> 自动流配置</h3>
             </center>
             </span>
                 <RepoList data={showData}
@@ -982,34 +981,29 @@ var RepoList = React.createClass({
         var index = 0;
         return (<center>
             <div style={{maxWidth: 750, minWidth: 640}}>
+                <div>
+                    <button onClick={this.onBatchSelectClick}
+                            className="btn btn-default btn-sm">
+                            <i className="icon-reorder"/> 批量选择
+                    </button>
+                    <button onClick={this.onSelectByBranch}
+                            style={{marginLeft: 10}}
+                            className="btn btn-default btn-sm">
+                            <i className="icon-sitemap"/> 按分支选择
+                    </button>
+                    <button onClick={this.onSelectAll}
+                            style={{marginLeft: 10}}
+                            className="btn btn-default btn-sm">
+                            <i className="icon-th-list"/> 全选
+                    </button>
+                    <button onClick={this.onSelectReverse}
+                            style={{marginLeft: 10}}
+                            className="btn btn-default btn-sm">
+                            <i className="icon-exchange"/> 反选
+                    </button>
+                </div>
+			
                 <table className="table table-striped table-condensed table-bordered">
-                    <tbody>
-                    <tr className="info">
-                        <td colSpan="4">
-                            <div>
-                                <button onClick={this.onBatchSelectClick}
-                                        className="btn btn-default btn-sm">
-                                    <i className="icon-reorder"/> 批量选择
-                                </button>
-                                <button onClick={this.onSelectByBranch}
-                                        style={{marginLeft: 10}}
-                                        className="btn btn-default btn-sm">
-                                    <i className="icon-sitemap"/> 按分支选择
-                                </button>
-                                <button onClick={this.onSelectAll}
-                                        style={{marginLeft: 10}}
-                                        className="btn btn-default btn-sm">
-                                    <i className="icon-th-list"/> 全选
-                                </button>
-                                <button onClick={this.onSelectReverse}
-                                        style={{marginLeft: 10}}
-                                        className="btn btn-default btn-sm">
-                                    <i className="icon-exchange"/> 反选
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
                     <RepoAdder list={this.props.list}
                                onChange={this.props.onChange}/>
                     {this.props.data.map((data)=> {

@@ -61,8 +61,11 @@ ul {
   padding-left: 30px;
 }
 
-table tr td {
+table tr  {
   border-collapse: separate !important;
+}
+
+td {
   border: 0px !important;
 }
 

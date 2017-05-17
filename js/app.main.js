@@ -1268,7 +1268,7 @@ var RepoAdder = React.createClass({
             <tr className="info">
                 <td colSpan="4">
                     <button className="btn btn-link" onClick={this.changeEditable}>
-                        <i className="icon-plus"/>添加仓库
+                        <i className="icon-plus-circle"/>添加仓库
                     </button>
                 </td>
             </tr>

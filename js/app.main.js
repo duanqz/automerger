@@ -786,8 +786,8 @@ var MailBranchAwareView = React.createClass({
         }
         return (<table className="table table-striped table-condensed table-bordered">
             <thead>
-            <tr className="info">
-                <th >
+            <tr className="info center-text">
+                <th>
                     <center>{this.props.tableName}</center>
                 </th>
                 <th>

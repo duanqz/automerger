@@ -862,7 +862,7 @@ var MailTableCore = React.createClass({
                 </button>
             </td>
         </tr> || <tr>
-            <th colSpan="2" className="info">
+            <th colSpan="2" className="info center-text">
                 <center>{this.props.tableName}</center>
             </th>
         </tr>}

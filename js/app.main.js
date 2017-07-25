@@ -227,7 +227,6 @@ var commitRemoteFile = function (content, fileName, log, callback, exception) {
         private_token: globalUserInfo.private_token,
         branch_name: BRANCH,
         file_path: `${DEFAULT_CONFIG_PATH}/${curSelected}${fileName}`,
-        encoding: 'text',
         content: content,
         commit_message: log
     };

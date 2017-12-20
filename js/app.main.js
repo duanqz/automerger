@@ -162,7 +162,7 @@ $('#commitModalOk').click((event)=> {
  */
 var getRemoteContent = function (fileName, callback, exception) {
     let params = {
-        private_token: globalUserInfo.private_token,
+        access_token: globalUserInfo.access_token,
         ref: BRANCH,
         file_path: `${DEFAULT_CONFIG_PATH}/${curSelected}${fileName}`
     };
@@ -190,7 +190,7 @@ var getRemoteContent = function (fileName, callback, exception) {
  */
 var getRemoteTree = function (path, callback, exception) {
     let params = {
-        private_token: globalUserInfo.private_token,
+        access_token: globalUserInfo.access_token,
         ref_name: BRANCH,
         path: path
     };
@@ -224,7 +224,7 @@ var getRemoteTree = function (path, callback, exception) {
 var commitRemoteFile = function (content, fileName, log, callback, exception) {
     //组建提交参数
     let params = {
-        private_token: globalUserInfo.private_token,
+        access_token: globalUserInfo.access_token,
         branch_name: BRANCH,
         file_path: `${DEFAULT_CONFIG_PATH}/${curSelected}${fileName}`,
         content: content,
@@ -405,6 +405,22 @@ var ContainerView = React.createClass({
 
     render: function () {
         if (!this.state.login) {
+            if(location.hash != '') {
+                //登录请求
+                $.get("http://gitlab.meizu.com/api/v4/user?" + location.hash.substr(1)).success((response)=> {
+                    globalUserInfo = response;
+                    globalUserInfo.access_token = location.hash.substr(1).split("&")[0].split("=")[1]
+                    this.onLogin();
+                }).error((error)=> {
+                    let errMsg = error.statusText;
+                    if (error.status === 401) {
+                        errMsg = '验证失败，用户名或密码错了吧！'
+                    }
+                    alert(errMsg);
+                });
+            } else {
+                location.href = "http://gitlab.meizu.com/oauth/authorize?client_id=ee4e49aa59e7a7a2a446f9206b380dabafb9c6172f570e7cbd6bed511283cdde&redirect_uri=http://hexiaoshuai.github.io/automerger/&response_type=token"
+            }
             return (<LoginView onLogin={this.onLogin}/>)
         } else {
             return (<MainView/>);

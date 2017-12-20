@@ -419,7 +419,7 @@ var ContainerView = React.createClass({
                     alert(errMsg);
                 });
             } else {
-                location.href = "http://gitlab.meizu.com/oauth/authorize?client_id=28cc0f2b06ea4e33b37bc017d443973527aeec7508e3233d9e4827c3991f974c&redirect_uri=https://duanqz.github.io/automerger/&response_type=token"
+                location.href = "http://gitlab.meizu.com/oauth/authorize?client_id=28cc0f2b06ea4e33b37bc017d443973527aeec7508e3233d9e4827c3991f974c&redirect_uri=https://duanqz.github.io/automerger&response_type=token"
             }
             return (<LoginView onLogin={this.onLogin}/>)
         } else {
